@@ -1,20 +1,14 @@
-from flask import Flask
-from flask import g
+from flask import Flask, Response, request, g
 import sqlite3
 from contextlib import closing
-
-DATABASE = 'wheels.db'
+import htmlencode
 
 app = Flask(__name__)
 
+DATABASE = 'wheels.db'
+
 def connect_db():
 	return sqlite3.connect(DATABASE)
-
-def init_db():
-    with closing(connect_db()) as db:
-		with app.open_resource('schema.sql') as f:
-			db.cursor().executescript(f.read())
-		db.commit()
 
 def query_db(query, args=(), one=False):
 	cur = g.db.execute(query, args)
@@ -26,25 +20,47 @@ def query_db(query, args=(), one=False):
 def index():
 	return '<a href="/wheelmodels">Wheels</a>'
 
+WHEEL_QUERY = '''
+		select wb.WheelBrandID, wb.WheelBrandDescription, wm.WheelModelID, 
+		wm.WheelModelDescription 
+		from wheelmodels wm 
+		inner join wheelbrands wb on wm.WheelBrandID = wb.WheelBrandID
+		'''
+		
 @app.route('/wheelmodels')
 def wheel_models_all():
-	ret = ""
-	for user in query_db('select * from wheelmodels'):
-		ret += user['name'], 'has the id', user['wheelmodelid']
-	return ret
+	brand = request.args.get('brand', '')
+	ret = '{ "items": [\n'
+	query = WHEEL_QUERY
+	if brand is None:
+		results = query_db(query)
+	else:
+		query += "where wb.WheelBrandDescription = ?" 
+		results = query_db(query, (brand,))
+	for wheel in results:
+		ret += '{\n"id": "' + str(wheel['WheelModelID']) + '", \n'
+		ret += '"brand": "' + str(wheel['WheelBrandDescription']) + '", \n'
+		ret += '"name": "' + htmlencode.html_escape(wheel['WheelModelDescription']) + '"\n},'
+	ret = ret[0:-1] #strip off the trailing comma
+	ret += ']}'
+	return Response(ret, mimetype='application/json')
     
 @app.route('/wheelmodels/<int:wheel_model_id>')
 def wheel_model_by_id(wheel_model_id):
-	user = query_db('select * from wheelmodels where wheelmodelid = ?', wheel_model_id, one=True)
-	if user is None:
-		print 'Wheel does not exist'
+	wheel = query_db(WHEEL_QUERY+' where wm.WheelModelID = ?', (wheel_model_id, ), one=True)
+	ret = ''
+	if wheel is None:
+		ret = '{"error": "Wheel model id does not exist"}'
 	else:
-		print wheel_model_id, 'has the name', user['name']
+		ret += '{\n"id": "' + str(wheel['WheelModelID']) + '", \n'
+		ret += '"brand": "' + str(wheel['WheelBrandDescription']) + '", \n'
+		ret += '"name": "' + htmlencode.html_escape(wheel['WheelModelDescription']) + '"\n}'
+	return Response(ret, mimetype='application/json')
     
 @app.before_request
 def before_request():
 	g.db = connect_db()
-	init_db()
+	#init_db()
 
 @app.teardown_request
 def teardown_request(exception):
