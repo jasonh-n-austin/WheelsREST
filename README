@@ -1,1 +1,9 @@
 An example of a Python+Flask-based RESTful web service, using a sqlLite db
+
+Intended for use with virtualenv
+```
+virtualenv venv
+. venv/bin/activate
+pip install Flask
+python index.py
+```
