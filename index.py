@@ -1,4 +1,4 @@
-from flask import Flask, Response, request
+from flask import Flask, Response, request, json
 from contextlib import closing
 import htmlencode
 import wheels_db
@@ -7,44 +7,44 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-	return '<a href="/wheelmodels">Wheels</a>'
+	return '<a href="/models">Wheels</a>'
 
-WHEEL_QUERY = '''
-		select wb.WheelBrandID, wb.WheelBrandDescription, wm.WheelModelID, 
-		wm.WheelModelDescription 
-		from wheelmodels wm 
-		inner join wheelbrands wb on wm.WheelBrandID = wb.WheelBrandID
-		'''
 		
-@app.route('/wheelmodels')
+@app.route('/models')
 def wheel_models_all():
 	brand = request.args.get('brand', '')
-	ret = '{ "items": [\n'
-	query = WHEEL_QUERY
 	if brand is None:
-		results = wheels_db.query_db(query)
+		results = wheels_db.models_all
 	else:
-		query += "where wb.WheelBrandDescription = ?" 
-		results = wheels_db.query_db(query, (brand,))
+		results = wheels_db.models_by_brand(brand)
+	
+	items = []
 	for wheel in results:
-		ret += '{\n"id": "' + str(wheel['WheelModelID']) + '", \n'
-		ret += '"brand": "' + str(wheel['WheelBrandDescription']) + '", \n'
-		ret += '"name": "' + htmlencode.html_escape(wheel['WheelModelDescription']) + '"\n},'
-	ret = ret[0:-1] #strip off the trailing comma
-	ret += ']}'
-	return Response(ret, mimetype='application/json')
+		item = {
+			'id'  : str(wheel['WheelModelID']),
+			'brand' : htmlencode.html_escape(wheel['WheelBrandDescription']),
+			'name' : htmlencode.html_escape(wheel['WheelModelDescription'])
+		}
+		items.append(item)
+	data = {
+		'items' : items
+	}
+	
+	return Response(json.dumps(data), mimetype='application/json')
     
-@app.route('/wheelmodels/<int:wheel_model_id>')
+@app.route('/models/<int:wheel_model_id>')
 def wheel_model_by_id(wheel_model_id):
-	wheel = wheels_db.query_db(WHEEL_QUERY+' where wm.WheelModelID = ?', (wheel_model_id, ), one=True)
-	ret = ''
+	wheel = wheels_db.models_by_id(wheel_model_id)
+	data = ''
 	if wheel is None:
-		ret = '{"error": "Wheel model id does not exist"}'
+		data = '{"error": "Wheel model id does not exist"}'
 	else:
-		ret += '{\n"id": "' + str(wheel['WheelModelID']) + '", \n'
-		ret += '"brand": "' + str(wheel['WheelBrandDescription']) + '", \n'
-		ret += '"name": "' + htmlencode.html_escape(wheel['WheelModelDescription']) + '"\n}'
-	return Response(ret, mimetype='application/json')
+		data = {
+			'id' : str(wheel['WheelModelID']),
+			'brand' : htmlencode.html_escape(wheel['WheelBrandDescription']),
+			'name' : htmlencode.html_escape(wheel['WheelModelDescription'])
+		}
+	return Response(json.dumps(data), mimetype='application/json')
     
 @app.before_request
 def before_request():
