@@ -1,20 +1,9 @@
-from flask import Flask, Response, request, g
-import sqlite3
+from flask import Flask, Response, request
 from contextlib import closing
 import htmlencode
+import wheels_db
 
 app = Flask(__name__)
-
-DATABASE = 'wheels.db'
-
-def connect_db():
-	return sqlite3.connect(DATABASE)
-
-def query_db(query, args=(), one=False):
-	cur = g.db.execute(query, args)
-	rv = [dict((cur.description[idx][0], value)
-			for idx, value in enumerate(row)) for row in cur.fetchall()]
-	return (rv[0] if rv else None) if one else rv
 
 @app.route('/')
 def index():
@@ -33,10 +22,10 @@ def wheel_models_all():
 	ret = '{ "items": [\n'
 	query = WHEEL_QUERY
 	if brand is None:
-		results = query_db(query)
+		results = wheels_db.query_db(query)
 	else:
 		query += "where wb.WheelBrandDescription = ?" 
-		results = query_db(query, (brand,))
+		results = wheels_db.query_db(query, (brand,))
 	for wheel in results:
 		ret += '{\n"id": "' + str(wheel['WheelModelID']) + '", \n'
 		ret += '"brand": "' + str(wheel['WheelBrandDescription']) + '", \n'
@@ -47,7 +36,7 @@ def wheel_models_all():
     
 @app.route('/wheelmodels/<int:wheel_model_id>')
 def wheel_model_by_id(wheel_model_id):
-	wheel = query_db(WHEEL_QUERY+' where wm.WheelModelID = ?', (wheel_model_id, ), one=True)
+	wheel = wheels_db.query_db(WHEEL_QUERY+' where wm.WheelModelID = ?', (wheel_model_id, ), one=True)
 	ret = ''
 	if wheel is None:
 		ret = '{"error": "Wheel model id does not exist"}'
@@ -59,14 +48,11 @@ def wheel_model_by_id(wheel_model_id):
     
 @app.before_request
 def before_request():
-	g.db = connect_db()
-	#init_db()
+	wheels_db.connect()
 
 @app.teardown_request
 def teardown_request(exception):
-	if hasattr(g, 'db'):
-		g.db.close()
-
+	wheels_db.close()
 
 if __name__ == '__main__':
 	app.run(debug=True)
