@@ -8,4 +8,7 @@ html_escape_table = {
 
 def html_escape(text):
 	"""Produce entities within text."""
-	return "".join(html_escape_table.get(c,c) for c in text)
+	if text != None:
+		return "".join(html_escape_table.get(c,c) for c in text)
+	else: 
+		return None

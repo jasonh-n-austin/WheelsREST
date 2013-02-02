@@ -1,6 +1,7 @@
 from flask import Flask, Response, request, json
 from contextlib import closing
 import htmlencode
+from response_helper import rh
 import wheels_db
 
 app = Flask(__name__)
@@ -9,42 +10,57 @@ app = Flask(__name__)
 def index():
 	return '<a href="/models">Wheels</a>'
 
+@app.route('/brands')
+def brands_all():
+	def json_item(item):
+		return {
+			'id'  : item['WheelBrandID'],
+			'brand' : htmlencode.html_escape(item['WheelBrandDescription']),
+			'url' : htmlencode.html_escape(item['WheelBrandURL']),
+			'photo' : htmlencode.html_escape(item['WheelBrandPhotoURL']),
+			'notes' : htmlencode.html_escape(item['WheelBrandNotes']),
+			'lastUpdated' : htmlencode.html_escape(item['LastUpdated'])
+		}
+
+	brand = request.args.get('brand', '')
+	if brand == '':
+		results = wheels_db.brands_all()
+	else: 
+		return Response("Brand: "+brand)
+	#else:
+	#	results = wheels_db.brands_by_brand(brand)	
+	return rh.jsonList(results, json_item)
+
 		
 @app.route('/models')
-def wheel_models_all():
-	brand = request.args.get('brand', '')
-	if brand is None:
-		results = wheels_db.models_all
-	else:
-		results = wheels_db.models_by_brand(brand)
-	
-	items = []
-	for wheel in results:
-		item = {
-			'id'  : str(wheel['WheelModelID']),
-			'brand' : htmlencode.html_escape(wheel['WheelBrandDescription']),
-			'name' : htmlencode.html_escape(wheel['WheelModelDescription'])
+def models_all():
+	def json_item(item):
+		return {
+			'id'  : item['WheelModelID'],
+			'brand' : htmlencode.html_escape(item['WheelBrandDescription']),
+			'name' : htmlencode.html_escape(item['WheelModelDescription'])
 		}
-		items.append(item)
-	data = {
-		'items' : items
-	}
+	brand = request.args.get('brand', '')
+	#if brand == '':
+	results = wheels_db.models_all()
+	#else:
+	#	results = wheels_db.models_by_brand(brand)
+	return rh.jsonList(results, json_item)
 	
-	return Response(json.dumps(data), mimetype='application/json')
     
 @app.route('/models/<int:wheel_model_id>')
-def wheel_model_by_id(wheel_model_id):
-	wheel = wheels_db.models_by_id(wheel_model_id)
-	data = ''
-	if wheel is None:
-		data = '{"error": "Wheel model id does not exist"}'
-	else:
-		data = {
-			'id' : str(wheel['WheelModelID']),
-			'brand' : htmlencode.html_escape(wheel['WheelBrandDescription']),
-			'name' : htmlencode.html_escape(wheel['WheelModelDescription'])
+def model_by_id(wheel_model_id):
+	def json_item(item):
+		return {
+			'id' : str(item['WheelModelID']),
+			'brand' : htmlencode.html_escape(item['WheelBrandDescription']),
+			'name' : htmlencode.html_escape(item['WheelModelDescription'])
 		}
-	return Response(json.dumps(data), mimetype='application/json')
+	results = wheels_db.models_by_id(wheel_model_id)
+	data = ''
+	if results is None:
+		return rh.error("Wheel model " + str(wheel_model_id) + " not found")
+	return rh.jsonItem(results, json_item)
     
 @app.before_request
 def before_request():
