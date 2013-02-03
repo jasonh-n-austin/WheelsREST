@@ -3,8 +3,6 @@ from flask_peewee.auth import BaseUser
 import datetime
 from app import db
 
-#database = MySQLDatabase('rafarafi_wheels', **{'passwd': 'ktd#433', 'host': 'pragmaticapi.com', 'user': 'rafarafi_admin'})
-
 class UnknownFieldType(object):
     pass
 
@@ -34,7 +32,7 @@ class Globalconfig(BaseModel):
 
     class Meta:
         db_table = 'globalconfig'
-
+    
 class Rides(BaseModel):
     userid = IntegerField()
 

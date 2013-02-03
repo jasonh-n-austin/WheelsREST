@@ -5,7 +5,9 @@ Intended for use with virtualenv
     virtualenv venv
     pip install Flask
 
-After this initial installation step, run the following each time you use the app
+Also, MySQLdb needs to be installed per os (or just gouge your eyes out with dull pencils on OSX)
+
+Next run the following each time you use the app
 
     . venv/bin/activate
-    python start.py
+    python main.py
