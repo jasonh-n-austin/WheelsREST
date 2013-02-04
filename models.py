@@ -32,7 +32,11 @@ class Globalconfig(BaseModel):
 
     class Meta:
         db_table = 'globalconfig'
-    
+    def __unicode__(self):
+        return self.key
+    def __name__(self):
+        return "Global configuration"
+
 class Rides(BaseModel):
     userid = IntegerField()
 
@@ -45,6 +49,8 @@ class Vehiclebrands(BaseModel):
 
     class Meta:
         db_table = 'vehiclebrands'
+    def __unicode__(self):
+        return self.description
 
 class Vehiclemodels(BaseModel):
     description = CharField()
@@ -52,6 +58,8 @@ class Vehiclemodels(BaseModel):
 
     class Meta:
         db_table = 'vehiclemodels'
+    def __unicode__(self):
+        return "%s %s" % (self.vehiclebrand.description, self.description)
 
 class Ridesvehicles(BaseModel):
     lastupdated = DateTimeField()
@@ -82,6 +90,9 @@ class Wheelbrands(BaseModel):
     class Meta:
         db_table = 'wheelbrands'
 
+    def __unicode__(self):
+        return self.description
+
 class Wheelmfgmethods(BaseModel):
     id = IntegerField(primary_key=True)
     description = CharField()
@@ -91,6 +102,9 @@ class Wheelmfgmethods(BaseModel):
     class Meta:
         db_table = 'wheelmfgmethods'
 
+    def __unicode__(self):
+        return self.description
+
 class Wheelmfglocations(BaseModel):
     description = CharField()
     lastupdated = DateTimeField()
@@ -99,6 +113,9 @@ class Wheelmfglocations(BaseModel):
 
     class Meta:
         db_table = 'wheelmfglocations'
+
+    def __unicode__(self):
+        return self.description
 
 class Wheelmodels(BaseModel):
     description = CharField()
@@ -114,9 +131,14 @@ class Wheelmodels(BaseModel):
     wheelbrand = ForeignKeyField(Wheelbrands, related_name='brands')
     wheelmfglocation = ForeignKeyField(rel_model=Wheelmfglocations)
     wheelmfgmethod = ForeignKeyField(rel_model=Wheelmfgmethods)
+    fullphotourl = 'http://wheelspecs.com'+Globalconfig.select().where(Globalconfig.key == 'WheelModelPhotoVDir')+photourl
 
     class Meta:
         db_table = 'wheelmodels'
+        order_by = ('wheelbrand', 'discontinued', 'description', )
+
+    def __unicode__(self):
+        return self.description
 
 class Wheelsizes(BaseModel):
     diameter = FloatField()
@@ -128,6 +150,9 @@ class Wheelsizes(BaseModel):
     class Meta:
         db_table = 'wheelsizes'
 
+    def __unicode__(self):
+        return "%sx%s" % (self.diameter, self.width)
+
 class Wheelfinishes(BaseModel):
     description = CharField()
     lastupdated = DateTimeField()
@@ -135,6 +160,9 @@ class Wheelfinishes(BaseModel):
 
     class Meta:
         db_table = 'wheelfinishes'
+
+    def __unicode__(self):
+        return self.description
 
 class Wheelpcds(BaseModel):
     lastupdated = DateTimeField()
@@ -145,6 +173,9 @@ class Wheelpcds(BaseModel):
 
     class Meta:
         db_table = 'wheelpcds'
+
+    def __unicode__(self):
+        return "%sx%s" % (self.lugs, self.spacing)
 
 class Wheelspecs(BaseModel):
     backspacing = FloatField()
@@ -200,7 +231,10 @@ class Taggroup(BaseModel):
     class Meta:
         db_table = 'taggroup'
 
-class Tags(BaseModel):
+    def __unicode__(self):
+        return self.name
+
+class TagItems(BaseModel):
     lastupdated = DateTimeField()
     name = CharField()
     total = IntegerField()
@@ -209,14 +243,20 @@ class Tags(BaseModel):
     class Meta:
         db_table = 'tags'
 
-class Taggroups(BaseModel):
+    def __unicode__(self):
+        return self.name
+
+class Tags(BaseModel):
     lastupdated = DateTimeField()
     taggroup = ForeignKeyField(rel_model=Taggroup)
-    tag = ForeignKeyField(rel_model=Tags)
+    tag = ForeignKeyField(rel_model=TagItems)
     updatedby = CharField()
 
     class Meta:
         db_table = 'taggroups'
+
+    def __unicode(self):
+        return "self.tag"
 
 class Vehiclemodelphotos(BaseModel):
     credits = CharField()
@@ -240,6 +280,9 @@ class Wheelbrandlinks(BaseModel):
     class Meta:
         db_table = 'wheelbrandlinks'
 
+    def __unicode__(self):
+        return "%s - %s" % (self.description, self.url)
+
 class Wheelbrandstracking(BaseModel):
     count = IntegerField()
     lastvisited = DateTimeField()
@@ -259,6 +302,9 @@ class Wheelmodellinks(BaseModel):
     class Meta:
         db_table = 'wheelmodellinks'
 
+    def __unicode__(self):
+        return self.url
+
 class Wheelmodelphotos(BaseModel):
     lastupdated = DateTimeField()
     sort = IntegerField()
@@ -268,6 +314,10 @@ class Wheelmodelphotos(BaseModel):
 
     class Meta:
         db_table = 'wheelmodelphotos'
+
+    def __unicode__(self):
+        return self.url
+
 
 class Wheelmodelstracking(BaseModel):
     count = IntegerField()
@@ -280,12 +330,13 @@ class Wheelmodelstracking(BaseModel):
 
 class Wheeltags(BaseModel):
     lastupdated = DateTimeField()
-    tag = ForeignKeyField(rel_model=Tags)
+    tag = ForeignKeyField(rel_model=TagItems)
     updatedby = CharField()
     wheelmodel = ForeignKeyField(rel_model=Wheelmodels)
 
     class Meta:
         db_table = 'wheeltags'
 
-def create_tables():
-    User.create_table()
+    def __unicode__(self):
+        return "%s %s - %s" % (self.wheelmodel.wheelbrand.description, self.wheelmodel.description, self.tag.name)
+
