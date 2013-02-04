@@ -131,7 +131,7 @@ class Wheelmodels(BaseModel):
     wheelbrand = ForeignKeyField(Wheelbrands, related_name='brands')
     wheelmfglocation = ForeignKeyField(rel_model=Wheelmfglocations)
     wheelmfgmethod = ForeignKeyField(rel_model=Wheelmfgmethods)
-    fullphotourl = 'http://wheelspecs.com'+Globalconfig.select().where(Globalconfig.key == 'WheelModelPhotoVDir')+photourl
+    fullphotourl = 'http://wheelspecs.com'+Globalconfig.select().where(Globalconfig.key == 'WheelModelPhotoVDir')[0].value
 
     class Meta:
         db_table = 'wheelmodels'
