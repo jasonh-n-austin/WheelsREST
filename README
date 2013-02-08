@@ -1,4 +1,4 @@
-An example of a Python+Flask-based RESTful web service, using a sqlLite db
+An example of a Python+Flask-based RESTful web service, using a MySQL db
 
 Intended for use with virtualenv
 
@@ -6,7 +6,7 @@ Intended for use with virtualenv
     pip install Flask
 
 Also, MySQLdb needs to be installed per os (or just gouge your eyes out with dull pencils on OSX)
-
+Config.py will need to be created for database connection
 Next run the following each time you use the app
 
     . venv/bin/activate
