@@ -89,6 +89,7 @@ class Wheelbrands(BaseModel):
 
     class Meta:
         db_table = 'wheelbrands'
+        order_by = ('description', )
 
     def __unicode__(self):
         return self.description
@@ -126,12 +127,11 @@ class Wheelmodels(BaseModel):
     notes = CharField()
     photourl = CharField()
     searchterm = CharField()
-    similar = ForeignKeyField(rel_model='self')
+    #similar = ForeignKeyField(rel_model='self')
     updatedby = CharField()
-    wheelbrand = ForeignKeyField(Wheelbrands, related_name='brands')
+    wheelbrand = ForeignKeyField(rel_model=Wheelbrands)
     wheelmfglocation = ForeignKeyField(rel_model=Wheelmfglocations)
     wheelmfgmethod = ForeignKeyField(rel_model=Wheelmfgmethods)
-    fullphotourl = 'http://wheelspecs.com'+Globalconfig.select().where(Globalconfig.key == 'WheelModelPhotoVDir')[0].value
 
     class Meta:
         db_table = 'wheelmodels'
