@@ -140,10 +140,15 @@ class Wheelmodels(BaseModel):
     def __unicode__(self):
         return self.description
 
+class Units(BaseModel):
+    name = CharField()
+    class Meta:
+        db_table = 'units'
+
 class Wheelsizes(BaseModel):
     diameter = FloatField()
     lastupdated = DateTimeField()
-    units_id = IntegerField()
+    units = ForeignKeyField(rel_model=Units)
     updatedby = CharField()
     width = FloatField()
 
@@ -168,7 +173,7 @@ class Wheelpcds(BaseModel):
     lastupdated = DateTimeField()
     lugs = IntegerField()
     spacing = FloatField()
-    units_id = IntegerField()
+    units = ForeignKeyField(rel_model=Units)
     updatedby = CharField()
 
     class Meta:
@@ -179,17 +184,17 @@ class Wheelpcds(BaseModel):
 
 class Wheelspecs(BaseModel):
     backspacing = FloatField()
-    backspacingunits_id = IntegerField()
+    backspacingunits = ForeignKeyField(rel_model=Units)
     centerbore = FloatField()
-    centerboreunits_id = IntegerField()
+    centerboreunits = ForeignKeyField(rel_model=Units)
     lastupdated = DateTimeField()
     notes = CharField()
     offset = FloatField()
-    offsetunits_id = IntegerField()
+    offsetunits = ForeignKeyField(rel_model=Units)
     photourl = CharField()
     updatedby = CharField()
     weight = FloatField()
-    weightunits_id = IntegerField()
+    weightunits = ForeignKeyField(rel_model=Units)
     wheelfinish = ForeignKeyField(rel_model=Wheelfinishes)
     wheelmodel = ForeignKeyField(rel_model=Wheelmodels)
     wheelpcd = ForeignKeyField(rel_model=Wheelpcds)
