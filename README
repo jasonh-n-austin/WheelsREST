@@ -1,11 +1,12 @@
-An example of a Python+Flask-based RESTful web service, using a MySQL db
+A Python+Flask+Peewee RESTful web service platform, using a MySQL db
 
 Intended for use with virtualenv
 
     virtualenv venv
     pip install Flask
+    pip install Flask-peewee
 
-Also, MySQLdb needs to be installed per os (or just gouge your eyes out with dull pencils on OSX)
+Also, MySQLdb library for python  needs to be installed per os (or just gouge your eyes out with dull pencils on OSX)
 Config.py will need to be created for database connection
 Next run the following each time you use the app
 
