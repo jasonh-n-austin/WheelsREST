@@ -1,11 +1,22 @@
 from flask import Flask, g
 from flask_peewee.db import MySQLDatabase
 #from models import User
+from pymongo import MongoClient
+import datetime
 
 app = Flask(__name__)
 app.config.from_object('config.Configuration')
 
 db = MySQLDatabase('wheels', **app.config['DATABASE'])
+
+@app.route("/mongoimport")
+def mongo_import():
+    connection = MongoClient()
+    connection = MongoClient('localhost', 27017)
+    db = connection.wheels_db
+    collection = db.wheels_collection
+    wheels = db.wheels
+    wheels.insert("{'id':1,'description':'Blah'}")
 
 @app.before_request
 def before_request():
