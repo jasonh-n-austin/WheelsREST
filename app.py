@@ -1,8 +1,6 @@
 from flask import Flask, g
 from flask_peewee.db import MySQLDatabase
 #from models import User
-from pymongo import MongoClient
-import datetime
 
 app = Flask(__name__)
 app.config.from_object('config.Configuration')
@@ -16,7 +14,9 @@ def mongo_import():
     db = connection.wheels_db
     collection = db.wheels_collection
     wheels = db.wheels
-    wheels.insert("{'id':1,'description':'Blah'}")
+#    f = urllib2.urlopen('http://localhost:5000/api/wheelbrands')
+#    json = simplejson.load(f)
+#    wheels.insert({"id":1,"description":"Blah"})
 
 @app.before_request
 def before_request():
